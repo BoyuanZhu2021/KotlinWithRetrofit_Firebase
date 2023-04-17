@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">KotlinWithRetrofit</string>
+    <string name="add">Add</string>
+    <string name="username">Username</string>
+    <string name="check_internet_connection">Kindly, Check your internet connection!</string>
+    <string name="ok">OK</string>
+    <string name="add_item">Add Item</string>
+    <string name="role">Password</string>
+    <string name="user_added">Password Added</string>
+    <string name="user_deleted">Password deleted</string>
+    <string name="website">Website</string>
+    <string name="btn_update">Update</string>
+    <string name="btn_show">Show Password</string>
+    <string name="btn_delete">Delete</string>
+</resources>
