@@ -14,7 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "1070338000283-3k1ivhnucqprf80dj84qo19ucrs7rl24.apps.googleusercontent.com",
+          "client_id": "1070338000283-l11r93p4e46f1n4mp9crms7mlib32a4t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sana.kotlinwithretrofit",
+            "certificate_hash": "f81d083c89f01107628245aaa194952394a55057"
+          }
+        },
+        {
+          "client_id": "1070338000283-pisb0vf9imr9gherjsr6j997rbs5tt3a.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
