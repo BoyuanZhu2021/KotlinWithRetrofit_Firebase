@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "1070338000283-mqtej3p20u0leo9laqe45n7aq39hqfb6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sana.kotlinwithretrofit",
+            "certificate_hash": "0b02f641506943c19fa2aa194caebe78b7fb59ee"
+          }
+        },
+        {
           "client_id": "1070338000283-pisb0vf9imr9gherjsr6j997rbs5tt3a.apps.googleusercontent.com",
           "client_type": 3
         }

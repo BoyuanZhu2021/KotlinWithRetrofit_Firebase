@@ -5,15 +5,20 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.sana.kotlinwithretrofit.common.BaseActivity
 import com.sana.kotlinwithretrofit.utilities.Constants.REQUEST_CODE
 import com.sana.kotlinwithretrofit.utilities.Constants.RESULT_CODE
 import com.sana.kotlinwithretrofit.utilities.Utilities
 import com.sana.kotlinwithretrofit.view.AddItemDialog
+import com.sana.kotlinwithretrofit.view.SignInActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -22,6 +27,9 @@ import java.lang.Exception
 /* This file sets up the main page */
 
 class UserActivity : BaseActivity(), View.OnClickListener{
+
+    private lateinit var mAuth: FirebaseAuth
+
     lateinit var fab_addItem: FloatingActionButton
     lateinit var recyclerView: RecyclerView
     lateinit var userAdapter: UserListAdapter
@@ -31,6 +39,7 @@ class UserActivity : BaseActivity(), View.OnClickListener{
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mAuth = Firebase.auth
         setContentView(R.layout.activity_user)
         initialise()
     }
@@ -38,7 +47,10 @@ class UserActivity : BaseActivity(), View.OnClickListener{
     /* Initialize the users, layout, add button */
     private fun initialise() {
         super.init()
-        toolbar?.setTitle("User")
+        //Firebase.auth.signOut()
+        val currentUser = mAuth.currentUser
+        //print(currentUser?.displayName)
+        toolbar?.setTitle(currentUser?.displayName)
 
         // To hide navigationIcon //
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
@@ -61,6 +73,13 @@ class UserActivity : BaseActivity(), View.OnClickListener{
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
+        //initalize the logout function
+        val logoutButton: ImageButton = findViewById(R.id.logout_button)
+        logoutButton.setOnClickListener {
+            logout()
+        }
+
     }
 
     /* To hide menu */
@@ -152,6 +171,15 @@ class UserActivity : BaseActivity(), View.OnClickListener{
                 }
             }
         }
+    }
+
+    //logout function
+    private fun logout() {
+        mAuth.signOut()
+        val intent = Intent(this, SignInActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }
 

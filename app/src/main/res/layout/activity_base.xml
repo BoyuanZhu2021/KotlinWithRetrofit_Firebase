@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@color/colorPrimary"
     app:title="@string/app_name"
-    app:navigationIcon="@drawable/ic_action_back"
+
     app:titleTextColor="@android:color/white"
     app:subtitleTextColor="@android:color/white"
     app:menu="@menu/home_menu">
@@ -14,10 +14,14 @@
     <!-- You can create your custom layout for toolbar if
      you don't want to use menu -->
 
-    <!--<ImageView
-        android:id="@+id/iv_deleteItem"
+    <ImageButton
+        android:id="@+id/logout_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_delete_white" />-->
+        android:layout_marginEnd="16dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="logout"
+        android:src="@drawable/ic_delete_white"
+        android:layout_gravity="end|center_vertical" />
 
 </androidx.appcompat.widget.Toolbar>
