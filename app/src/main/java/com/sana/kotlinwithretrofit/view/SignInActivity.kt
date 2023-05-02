@@ -3,7 +3,9 @@ package com.sana.kotlinwithretrofit.view
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -17,12 +19,14 @@ import com.sana.kotlinwithretrofit.UserActivity
 import com.sana.kotlinwithretrofit.UserDetailsActivity
 
 
+
 class SignInActivity: AppCompatActivity() {
 
     companion object{
         private const val RC_SIGN_IN = 120
     }
 
+    private lateinit var auth: FirebaseAuth
     private lateinit var mAuth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
 
@@ -38,6 +42,7 @@ class SignInActivity: AppCompatActivity() {
 
         googleSignInClient = GoogleSignIn.getClient(this,gso)
 
+        auth = FirebaseAuth.getInstance()
         mAuth = FirebaseAuth.getInstance()
 
         val signInBtn = findViewById<Button> (R.id.sign_in_btn)
@@ -48,10 +53,15 @@ class SignInActivity: AppCompatActivity() {
 
     }
 
-    private fun signIn(){
-        val signInIntent = googleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
+    private fun signIn() {
+        // Sign out the current user to ensure they are prompted to choose an account
+        googleSignInClient.signOut().addOnCompleteListener {
+            // Proceed with signing in after successful sign-out
+            val signInIntent = googleSignInClient.signInIntent
+            startActivityForResult(signInIntent, RC_SIGN_IN)
+        }
     }
+
 
     override fun onActivityResult(requestCode: Int, resultCode:Int, data: Intent?){
         super.onActivityResult(requestCode, resultCode, data)
@@ -95,6 +105,36 @@ class SignInActivity: AppCompatActivity() {
                 Log.e("SignInActivity", "signInWithCredentialFailure", exception)
                 Toast.makeText(this, "Authentication failed: ${exception.message}", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    fun signInWithEmailPassword(view: View) {
+        // Get user input from EditText views
+        val emailInput = findViewById<EditText>(R.id.email_input)
+        val passwordInput = findViewById<EditText>(R.id.password_input)
+
+        val email = emailInput.text.toString()
+        val password = passwordInput.text.toString()
+
+        // Check if email and password are not empty
+        if (email.isNotEmpty() && password.isNotEmpty()) {
+            mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        // Sign in success, go to the next activity
+                        val intent = Intent(this, UserActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        // If sign in fails, display a message to the user
+                        Toast.makeText(baseContext, "Authentication failed.",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                }
+        } else {
+            // Show error message if email or password is empty
+            Toast.makeText(baseContext, "Please enter email and password.",
+                Toast.LENGTH_SHORT).show()
+        }
     }
 
 }
