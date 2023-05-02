@@ -137,4 +137,36 @@ class SignInActivity: AppCompatActivity() {
         }
     }
 
+    // Register a new email psw account
+    fun registerWithEmailPassword(view: View) {
+        // Get user input from EditText views
+        val emailInput = findViewById<EditText>(R.id.email_input)
+        val passwordInput = findViewById<EditText>(R.id.password_input)
+
+        val email = emailInput.text.toString()
+        val password = passwordInput.text.toString()
+
+        // Check if email and password are not empty
+        if (email.isNotEmpty() && password.isNotEmpty()) {
+            mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        // Registration success, go to the next activity
+                        val intent = Intent(this, UserActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        // If registration fails, display a message to the user
+                        Toast.makeText(baseContext, "Registration failed.",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                }
+        } else {
+            // Show error message if email or password is empty
+            Toast.makeText(baseContext, "Please enter email and password.",
+                Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
 }

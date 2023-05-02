@@ -49,8 +49,12 @@ class UserActivity : BaseActivity(), View.OnClickListener{
         super.init()
         //Firebase.auth.signOut()
         val currentUser = mAuth.currentUser
+        // Get the user's display name or email if the display name is null
+        val displayName = currentUser?.displayName ?: currentUser?.email
+
+        toolbar?.setTitle(displayName)
         //print(currentUser?.displayName)
-        toolbar?.setTitle(currentUser?.displayName)
+        //toolbar?.setTitle(currentUser?.displayName)
 
         // To hide navigationIcon //
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
