@@ -30,12 +30,9 @@ class UserDetailsActivity : BaseActivity() {
     private lateinit var database: FirebaseDatabase
     private lateinit var userReference: DatabaseReference
 
-    //lateinit var image: ImageView
     var userType: String = ""
     var userName: String = ""
     var website: String = ""
-    //private var mScaleGestureDetector: ScaleGestureDetector? = null
-    // Your existing properties
     var itemPosition: Int = -1
     var userId: String = ""
 
