@@ -13,6 +13,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.sana.kotlinwithretrofit.common.BaseActivity
 import com.sana.kotlinwithretrofit.utilities.Constants.REQUEST_CODE
 import com.sana.kotlinwithretrofit.utilities.Constants.RESULT_CODE
@@ -24,11 +26,13 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.lang.Exception
 
-/* This file sets up the main page */
+/* This file sets up the main page after the login*/
 
 class UserActivity : BaseActivity(), View.OnClickListener{
 
     private lateinit var mAuth: FirebaseAuth
+    private lateinit var database: DatabaseReference
+    private lateinit var userId: String
 
     lateinit var fab_addItem: FloatingActionButton
     lateinit var recyclerView: RecyclerView
@@ -40,6 +44,9 @@ class UserActivity : BaseActivity(), View.OnClickListener{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mAuth = Firebase.auth
+
+        database = FirebaseDatabase.getInstance().reference
+
         setContentView(R.layout.activity_user)
         initialise()
     }
@@ -48,13 +55,18 @@ class UserActivity : BaseActivity(), View.OnClickListener{
     private fun initialise() {
         super.init()
         //Firebase.auth.signOut()
+        // Get the current user
         val currentUser = mAuth.currentUser
-        // Get the user's display name or email if the display name is null
+        userId = currentUser?.uid ?: ""
+        getUserData()
+        // Get the display name or email if the display name is null
         val displayName = currentUser?.displayName ?: currentUser?.email
-
+        // Save user data in SharedPreferences
+        saveUserDataInPreferences(displayName, currentUser?.email)
+        // Set the display name as the toolbar title
         toolbar?.setTitle(displayName)
-        //print(currentUser?.displayName)
-        //toolbar?.setTitle(currentUser?.displayName)
+
+
 
         // To hide navigationIcon //
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
@@ -71,7 +83,8 @@ class UserActivity : BaseActivity(), View.OnClickListener{
 
         try {
             /* display the user as recyclerView */
-            userAdapter = UserListAdapter(this, userList, {user,position -> onItemClicked(user,position)})
+            //userAdapter = UserListAdapter(this, userList, {user,position -> onItemClicked(user,position)})
+            userAdapter = UserListAdapter(this, userList, ::onItemClicked)
             recyclerView.adapter = userAdapter;
 
         } catch (e: Exception) {
@@ -103,6 +116,7 @@ class UserActivity : BaseActivity(), View.OnClickListener{
         intent.putExtra("username",user.username)
         intent.putExtra("userType",user.userType)
         intent.putExtra("image",user.image)
+        intent.putExtra("userId", userId)
         startActivityForResult(intent, REQUEST_CODE)
     }
 
@@ -167,7 +181,7 @@ class UserActivity : BaseActivity(), View.OnClickListener{
 
                     dialog.onAddItem(object : AddItemDialog.IAddItemCallback {
                         override fun addItem(user: User) {
-
+                            saveUserData(user) // Save the user data to the Realtime Database
                             userAdapter.addItem(user)
 
                         }
@@ -177,13 +191,65 @@ class UserActivity : BaseActivity(), View.OnClickListener{
         }
     }
 
-    //logout function
+    // Helper function to store user data in SharedPreferences
+    private fun saveUserDataInPreferences(displayName: String?, email: String?) {
+        // Get SharedPreferences instance with a custom name "user_data"
+        val sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE)
+        // Get SharedPreferences editor to store data
+        val editor = sharedPreferences.edit()
+        // Store display name and email in SharedPreferences
+        editor.putString("display_name", displayName)
+        editor.putString("email", email)
+        // Apply the changes
+        editor.apply()
+    }
+
+
+    // Helper function to load user data from SharedPreferences
+    private fun loadUserDataFromPreferences(): Pair<String?, String?> {
+        // Get SharedPreferences instance with a custom name "user_data"
+        val sharedPreferences = getSharedPreferences("user_data", MODE_PRIVATE)
+        // Retrieve display name and email from SharedPreferences
+        val displayName = sharedPreferences.getString("display_name", null)
+        val email = sharedPreferences.getString("email", null)
+        // Return the display name and email as a Pair
+        return Pair(displayName, email)
+    }
+
+
+    private fun getUserData() {
+        val userId = mAuth.currentUser?.uid ?: return
+        database.child("users").child(userId).get().addOnSuccessListener { dataSnapshot ->
+            val user = dataSnapshot.getValue(User::class.java)
+            if (user != null) {
+                userList.add(user)
+                userAdapter.notifyDataSetChanged()
+            }
+        }.addOnFailureListener {
+            // Handle errors
+        }
+    }
+
+    private fun saveUserData(user: User) {
+        val userId = mAuth.currentUser?.uid ?: return
+        database.child("users").child(userId).setValue(user)
+    }
+
+
+    // Logout function
     private fun logout() {
+        // Sign out from Firebase Auth
         mAuth.signOut()
+        // Load user data from SharedPreferences
+        val (displayName, email) = loadUserDataFromPreferences()
+        // Set the display name or email as the toolbar title
+        toolbar?.setTitle(displayName ?: email)
+        // Navigate to SignInActivity
         val intent = Intent(this, SignInActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
     }
+
 }
 

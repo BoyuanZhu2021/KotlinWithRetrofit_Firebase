@@ -16,6 +16,8 @@ import com.sana.kotlinwithretrofit.common.ScaleListener
 import com.google.android.material.textfield.TextInputEditText
 import android.widget.Button
 import android.widget.Toast
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 
 
@@ -24,6 +26,10 @@ import android.widget.Toast
 /* this class controls the activity_user_details.xml */
 class UserDetailsActivity : BaseActivity() {
 
+    // Add FirebaseDatabase and DatabaseReference
+    private lateinit var database: FirebaseDatabase
+    private lateinit var userReference: DatabaseReference
+
     //lateinit var image: ImageView
     var userType: String = ""
     var userName: String = ""
@@ -31,14 +37,16 @@ class UserDetailsActivity : BaseActivity() {
     //private var mScaleGestureDetector: ScaleGestureDetector? = null
     // Your existing properties
     var itemPosition: Int = -1
+    var userId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_details)
         initialise()
 
-        /* Pinch To Zoom Image */
-        //mScaleGestureDetector = ScaleGestureDetector(this, ScaleListener(image))
+        // Initialize FirebaseDatabase and DatabaseReference
+        database = FirebaseDatabase.getInstance()
+        userReference = database.getReference("users")
 
     }
 
@@ -54,6 +62,9 @@ class UserDetailsActivity : BaseActivity() {
             if (intent != null) {
 
                 /* initalize hints from the saved user information */
+                if (intent.hasExtra("userId")) {
+                    userId = intent.getStringExtra("userId").toString()
+                }
 
                 // bounding the current object position
                 if (intent.hasExtra("itemPosition")) {
@@ -100,6 +111,9 @@ class UserDetailsActivity : BaseActivity() {
             resultIntent.putExtra("updatedUserType", updatedUserType)
             resultIntent.putExtra("updatedWebsite", updatedWebsite)
 
+            // Update the user data in Firebase
+            updateUser(userId, updatedUserName, updatedUserType, updatedWebsite)
+
             Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show()
 
             setResult(Activity.RESULT_OK, resultIntent)
@@ -122,10 +136,39 @@ class UserDetailsActivity : BaseActivity() {
                 UserActivity::class.java
             ) // Replace 'MainActivity' with the name of your main screen activity
             //startActivity(intent)
+            // Delete the user data from Firebase
+            deleteUser(userId)
             setResult(RESULT_CODE, intent)
             finish()
         }
+        }
+    // Method to update the user data in Firebase
+    private fun updateUser(
+        userId: String,
+        userName: String,
+        userType: String,
+        website: String
+    ) {
+        val userUpdates = hashMapOf<String, Any>(
+            "login" to userName,
+            "type" to userType,
+            "website" to website
+        )
 
+        userReference.child(userId).updateChildren(userUpdates).addOnCompleteListener {
+            Toast.makeText(this, "Updated", Toast.LENGTH_SHORT).show()
+            setResult(Activity.RESULT_OK)
+            finish()
+        }
+    }
+
+    // Method to delete the user data from Firebase
+    private fun deleteUser(userId: String) {
+        userReference.child(userId).removeValue().addOnCompleteListener {
+            Toast.makeText(this, "User Deleted", Toast.LENGTH_SHORT).show()
+            setResult(RESULT_CODE)
+            finish()
+        }
     }
 }
 
